@@ -1,0 +1,3 @@
+[00:00:02.409] Server  WARN     ⚠ Duplicate page detected. pages\admin.js and pages\admin\index.js resolve to /admin
+[00:00:02.411] Server  WARN     ⚠ Duplicate page detected. pages\admin.js and pages\admin\index.js resolve to /admin
+[00:00:02.413] Server  LOG      ✓ Ready in 1529ms
