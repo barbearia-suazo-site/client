@@ -1,0 +1,6 @@
+{
+  "watch": ["routes", "models", "server.js"],
+  "ignore": ["uploads/*"],
+  "ext": "js,json",
+  "exec": "node server.js"
+}
