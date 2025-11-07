@@ -25,7 +25,7 @@ export default function Header() {
         {/* 👇 Logo clicável leva à página inicial */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <Image
-            src="/logo.jpeg" // coloque sua logo dentro da pasta /public
+            src="/logo.png" // coloque sua logo dentro da pasta /public
             alt="Suazo Barber Logo"
             width={48}
             height={48}
