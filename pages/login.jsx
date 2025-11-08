@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 // Solo estos correos pueden ir al /admin
 const ADMIN_ALLOWLIST = new Set(["admin@suazo.com", "admin@hiago.com"]);
