@@ -2,19 +2,23 @@ import { useEffect } from "react";
 
 export default function Home() {
   useEffect(() => {
-    // Recarrega o script do Instagram ao montar a página
+    // Carga el script de Instagram al montar la página
     const script = document.createElement("script");
-    script.src = "//www.instagram.com/embed.js";
+    script.src = "https://www.instagram.com/embed.js";
     script.async = true;
     document.body.appendChild(script);
+
     return () => {
-      document.body.removeChild(script);
+      // Limpieza al desmontar el componente
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
   }, []);
 
   return (
     <main style={{ padding: 0, margin: 0 }}>
-      {/* === Hero com imagem de fundo === */}
+      {/* === Hero con imagen de fondo === */}
       <section
         style={{
           position: "relative",
@@ -41,7 +45,7 @@ export default function Home() {
             backgroundColor: "rgba(0,0,0,0.55)",
             zIndex: 1,
           }}
-        ></div>
+        />
 
         {/* Texto principal */}
         <div style={{ position: "relative", zIndex: 2 }}>
@@ -54,6 +58,7 @@ export default function Home() {
               marginBottom: 30,
               maxWidth: 600,
               lineHeight: 1.5,
+              marginInline: "auto",
             }}
           >
             Estilo, precisión y atención personalizada. En Suazo Barber
@@ -69,11 +74,16 @@ export default function Home() {
               fontWeight: "bold",
               textDecoration: "none",
               transition: "background 0.3s",
+              display: "inline-block",
             }}
-            onMouseOver={(e) => (e.target.style.background = "#0055aa")}
-            onMouseOut={(e) => (e.target.style.background = "#0066cc")}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#0055aa";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "#0066cc";
+            }}
           >
-            💈 Marcar una cita
+            💈 Reservar una cita
           </a>
         </div>
       </section>
@@ -97,7 +107,13 @@ export default function Home() {
           🧔 Síguenos en Instagram
         </h2>
 
-        <p style={{ marginBottom: "20px", color: "#555", textAlign: "center" }}>
+        <p
+          style={{
+            marginBottom: "20px",
+            color: "#555",
+            textAlign: "center",
+          }}
+        >
           Mira nuestros últimos estilos y cortes en{" "}
           <a
             href="https://www.instagram.com/suazo_barber/"
@@ -111,15 +127,20 @@ export default function Home() {
               textDecoration: "none",
               fontWeight: "bold",
               transition: "background 0.3s",
+              display: "inline-block",
             }}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#007acc")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#0095f6")}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#007acc";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#0095f6";
+            }}
           >
             @suazo_barber
           </a>
         </p>
 
-        {/* Publicación real de Instagram embebida (perfil Suazo) */}
+        {/* Publicación de Instagram embebida (perfil Suazo) */}
         <section
           style={{
             display: "flex",
@@ -145,7 +166,7 @@ export default function Home() {
               display: "flex",
               justifyContent: "center",
             }}
-          ></blockquote>
+          />
         </section>
       </section>
 
@@ -159,7 +180,7 @@ export default function Home() {
       >
         <h2 style={{ marginBottom: 16 }}>Nuestra ubicación</h2>
         <p style={{ marginBottom: 16 }}>
-          Visítanos en nuestro local en Barcelona:
+          Ven a visitarnos en nuestro local en Barcelona:
         </p>
 
         <div style={{ display: "flex", justifyContent: "center" }}>
@@ -167,10 +188,11 @@ export default function Home() {
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5986.913964178672!2d2.1401436848266018!3d41.385881122102255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a3f049b1ffb5%3A0xa70c96848064def3!2sSuazo%20Barber!5e0!3m2!1ses!2ses!4v1761577240401!5m2!1ses!2ses"
             width="800"
             height="250"
-            style={{ border: 0, borderRadius: 12, maxWidth: 800 }}
-            allowFullScreen=""
+            style={{ border: 0, borderRadius: 12, maxWidth: 800, width: "100%" }}
+            allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
+            title="Ubicación de Suazo Barber"
           ></iframe>
         </div>
       </section>
