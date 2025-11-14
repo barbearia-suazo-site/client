@@ -34,8 +34,6 @@ export default function AdminPanel() {
 
   // 🔐 Verifica token y perfil admin antes de cargar datos
   useEffect(() => {
-    let intervalId;
-
     const init = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -72,9 +70,8 @@ export default function AdminPanel() {
     };
 
     init();
-    return () => intervalId && clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // sin interval para no hacer “parpadear” la lista
+  }, [router]);
 
   // 🔄 Cargar ventas + productos
   const loadData = async (token) => {
@@ -116,13 +113,13 @@ export default function AdminPanel() {
       // 1) Subir imagen si existe
       if (newProduct.image) {
         const form = new FormData();
-        // El backend espera el campo "file"
+        // El backend de /api/upload espera el campo "file"
         form.append("file", newProduct.image);
 
         const up = await axios.post(`${API}/api/upload`, form, {
           headers: {
             Authorization: `Bearer ${token}`,
-            // No fijar Content-Type aquí, axios lo hace automáticamente
+            // No fijar Content-Type: axios lo hace solo
           },
         });
 
@@ -134,7 +131,7 @@ export default function AdminPanel() {
         name: newProduct.name,
         price: Number(newProduct.price),
         description: newProduct.description,
-        imageUrl, // campo usado en el backend
+        imageUrl, // el backend lo guardará en "image"
       };
 
       await axios.post(`${API}/api/products`, payload, {
@@ -434,31 +431,31 @@ export default function AdminPanel() {
               : "/fallback.png";
 
             return (
-             <div
-  key={p._id}
-  style={{
-    background: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-    textAlign: "center",
-    maxWidth: 260,        // 👈 card mais compacto
-    margin: "0 auto",     // 👈 centralizado quando só tem 1
-  }}
->
-  <img
-    src={src}
-    alt={p.name}
-    style={{
-      width: "100%",
-      aspectRatio: "1 / 1", // 👈 quadrado
-      objectFit: "cover",
-      borderRadius: 8,
-    }}
-    onError={(e) => {
-      e.currentTarget.src = "/fallback.png";
-    }}
-  />
+              <div
+                key={p._id}
+                style={{
+                  background: "#fff",
+                  padding: 15,
+                  borderRadius: 10,
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                  textAlign: "center",
+                  maxWidth: 260,
+                  margin: "0 auto",
+                }}
+              >
+                <img
+                  src={src}
+                  alt={p.name}
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1 / 1",
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = "/fallback.png";
+                  }}
+                />
                 <h3>{p.name}</h3>
                 <p>
                   <strong>€ {p.price}</strong>
