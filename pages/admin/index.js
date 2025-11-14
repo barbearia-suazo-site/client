@@ -413,50 +413,96 @@ export default function AdminPanel() {
       </section>
 
       {/* === PRODUCTOS === */}
-      <section style={{ marginTop: 40 }}>
-        <h2>🧴 Productos</h2>
+<section style={{ marginTop: 40 }}>
+  <h2>🧴 Productos</h2>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+      gap: 24,
+    }}
+  >
+    {products.map((p) => {
+      const img = p.imageUrl || p.image || "";
+      const src = img
+        ? img.startsWith("http")
+          ? img
+          : `${API}${img}`
+        : "/fallback.png";
+
+      return (
         <div
+          key={p._id}
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "20px",
+            background: "#fff",
+            padding: 15,
+            borderRadius: 16,
+            boxShadow: "0 6px 18px rgba(0,0,0,0.09)",
+            textAlign: "center",
+            maxWidth: 320,
+            margin: "0 auto",
+            boxSizing: "border-box",
           }}
         >
-          {products.map((p) => {
-            const img = p.imageUrl || p.image || "";
-            const src = img
-              ? img.startsWith("http")
-                ? img
-                : `${API}${img}`
-              : "/fallback.png";
+          <div
+            style={{
+              width: "100%",
+              height: 220,          // 👈 altura fixa para todas as imagens
+              borderRadius: 14,
+              overflow: "hidden",
+              marginBottom: 10,
+              background: "#f5f5f5",
+            }}
+          >
+            <img
+              src={src}
+              alt={p.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+              onError={(e) => {
+                e.currentTarget.src = "/fallback.png";
+              }}
+            />
+          </div>
 
-            return (
-              <div
-                key={p._id}
-                style={{
-                  background: "#fff",
-                  padding: 15,
-                  borderRadius: 10,
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                  textAlign: "center",
-                  maxWidth: 260,
-                  margin: "0 auto",
-                }}
-              >
-                <img
-                  src={src}
-                  alt={p.name}
-                  style={{
-                    width: "100%",
-                    aspectRatio: "1 / 1",
-                    objectFit: "cover",
-                    borderRadius: 8,
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.src = "/fallback.png";
-                  }}
-                />
-                <h3>{p.name}</h3>
+          <h3>{p.name}</h3>
+          <p style={{ color: "#666", fontSize: 14, margin: "4px 0 6px" }}>
+            {p.description}
+          </p>
+          <p style={{ marginBottom: 10 }}>
+            <strong>€ {p.price}</strong>
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 10,
+            }}
+          >
+            <button style={blueButton} onClick={() => handleEdit(p)}>
+              ✏️ Editar
+            </button>
+            <button
+              style={{ ...blueButton, backgroundColor: "#e53e3e" }}
+              onClick={() => handleDelete(p._id)}
+            >
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  {/* Formulario nuevo producto permanece igual abaixo... */}
+  {/* (deixa o resto da seção como já está no seu arquivo) */}
+</section>
+          <h3>{p.name}</h3>
                 <p>
                   <strong>€ {p.price}</strong>
                 </p>
