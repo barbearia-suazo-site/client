@@ -1,3 +1,4 @@
+// client/pages/admin/index.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
@@ -11,10 +12,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export default function AdminPanel() {
   const router = useRouter();
 
-  // Estados principais
+  // Estados principales
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
@@ -29,9 +32,7 @@ export default function AdminPanel() {
     image: null, // File
   });
 
-  const API = process.env.NEXT_PUBLIC_API_URL;
-
-  // 🔐 Verifica token e perfil admin antes de carregar dados
+  // 🔐 Verifica token y perfil admin antes de cargar datos
   useEffect(() => {
     let intervalId;
 
@@ -47,8 +48,12 @@ export default function AdminPanel() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!resp.data?.valid || resp.data?.role !== "admin" || !resp.data?.isAdminAllowed) {
-          alert("Acesso restrito: apenas administradores autorizados.");
+        if (
+          !resp.data?.valid ||
+          resp.data?.role !== "admin" ||
+          !resp.data?.isAdminAllowed
+        ) {
+          alert("Acceso restringido: solo administradores autorizados.");
           localStorage.removeItem("token");
           router.push("/login");
           return;
@@ -58,7 +63,10 @@ export default function AdminPanel() {
         intervalId = setInterval(() => loadData(token), 10000);
         setLoading(false);
       } catch (err) {
-        console.error("Erro ao verificar credenciais:", err?.response?.data || err.message);
+        console.error(
+          "Error al verificar credenciales:",
+          err?.response?.data || err.message
+        );
         localStorage.removeItem("token");
         router.push("/login");
       }
@@ -69,17 +77,24 @@ export default function AdminPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔄 Carregar vendas + produtos
+  // 🔄 Cargar ventas + productos
   const loadData = async (token) => {
     try {
       const [sales, prod] = await Promise.all([
-        axios.get(`${API}/api/sales`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/products`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/api/sales`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API}/api/products`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
       setSalesData(sales.data || []);
       setProducts(prod.data || []);
     } catch (err) {
-      console.error("Erro ao carregar dados:", err?.response?.data || err.message);
+      console.error(
+        "Error al cargar datos:",
+        err?.response?.data || err.message
+      );
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         localStorage.removeItem("token");
         router.push("/login");
@@ -87,43 +102,58 @@ export default function AdminPanel() {
     }
   };
 
-  // ➕ Adicionar novo produto (faz upload e depois cria)
+  // ➕ Añadir nuevo producto (sube imagen y luego crea)
   const handleAddProduct = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     if (!token) return router.push("/login");
 
     try {
-      let imagePath = "";
+      let imageUrl = "";
 
-      // 1) Upload da imagem se existir
+      // 1) Subir imagen si existe
       if (newProduct.image) {
         const form = new FormData();
-        form.append("image", newProduct.image);
+        // El backend espera el campo "file"
+        form.append("file", newProduct.image);
+
         const up = await axios.post(`${API}/api/upload`, form, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // No fijar Content-Type aquí, axios lo hace automáticamente
+          },
         });
-        imagePath = up?.data?.filePath || "";
+
+        // El backend devuelve { ok: true, url: "https://..." }
+        imageUrl = up?.data?.url || "";
       }
 
-      // 2) Cria o produto (JSON simples)
+      // 2) Crear el producto (JSON simple)
       const payload = {
         name: newProduct.name,
         price: Number(newProduct.price),
         description: newProduct.description,
-        image: imagePath, // ex.: /uploads/12345.png
+        imageUrl, // campo usado en el backend
       };
 
       await axios.post(`${API}/api/products`, payload, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       await loadData(token);
       setNewProduct({ name: "", price: "", description: "", image: null });
-      alert("Produto adicionado com sucesso!");
+      alert("¡Producto añadido con éxito!");
     } catch (err) {
-      console.error("Erro ao adicionar produto:", err?.response?.data || err.message);
-      alert("Erro ao adicionar produto. Verifique os dados e tente novamente.");
+      console.error(
+        "Error al añadir producto:",
+        err?.response?.data || err.message
+      );
+      alert(
+        "Error al añadir producto. Revisa los datos e inténtalo de nuevo."
+      );
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         localStorage.removeItem("token");
         router.push("/login");
@@ -131,10 +161,10 @@ export default function AdminPanel() {
     }
   };
 
-  // ✏️ Editar produto (abre modal)
+  // ✏️ Editar producto (abre modal)
   const handleEdit = (item) => setEditingItem(item);
 
-  // 💾 Salvar edição
+  // 💾 Guardar edición
   const handleSaveEdit = async () => {
     const token = localStorage.getItem("token");
     if (!token) return router.push("/login");
@@ -146,8 +176,11 @@ export default function AdminPanel() {
       await loadData(token);
       setEditingItem(null);
     } catch (err) {
-      console.error("Erro ao salvar edição:", err?.response?.data || err.message);
-      alert("Erro ao salvar alterações.");
+      console.error(
+        "Error al guardar edición:",
+        err?.response?.data || err.message
+      );
+      alert("Error al guardar los cambios.");
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         localStorage.removeItem("token");
         router.push("/login");
@@ -155,9 +188,9 @@ export default function AdminPanel() {
     }
   };
 
-  // 🗑️ Excluir produto
+  // 🗑️ Eliminar producto
   const handleDelete = async (id) => {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+    if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
     const token = localStorage.getItem("token");
     if (!token) return router.push("/login");
 
@@ -167,8 +200,11 @@ export default function AdminPanel() {
       });
       await loadData(token);
     } catch (err) {
-      console.error("Erro ao deletar produto:", err?.response?.data || err.message);
-      alert("Erro ao excluir produto.");
+      console.error(
+        "Error al eliminar producto:",
+        err?.response?.data || err.message
+      );
+      alert("Error al eliminar el producto.");
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         localStorage.removeItem("token");
         router.push("/login");
@@ -176,12 +212,13 @@ export default function AdminPanel() {
     }
   };
 
-  // 🔎 Buscar faturação por datas
+  // 🔎 Buscar facturación por fechas
   const handleSearchByDate = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     if (!token) return router.push("/login");
-    if (!startDate || !endDate) return alert("Selecione as duas datas");
+    if (!startDate || !endDate)
+      return alert("Selecciona ambas fechas, por favor.");
 
     try {
       const res = await axios.get(
@@ -190,12 +227,15 @@ export default function AdminPanel() {
       );
       setFilteredSales(res.data || []);
     } catch (err) {
-      console.error("Erro ao buscar por datas:", err?.response?.data || err.message);
-      alert("Erro ao buscar faturação.");
+      console.error(
+        "Error al buscar por fechas:",
+        err?.response?.data || err.message
+      );
+      alert("Error al buscar la facturación.");
     }
   };
 
-  // 🖨️ Imprimir seção
+  // 🖨️ Imprimir sección
   const handlePrint = () => {
     const el = document.getElementById("printable-section");
     if (!el) return;
@@ -212,9 +252,12 @@ export default function AdminPanel() {
     router.push("/login");
   };
 
-  // Totais
+  // Totales
   const totalMensual = salesData.reduce((acc, v) => acc + (v.total || 0), 0);
-  const totalFiltrado = filteredSales.reduce((acc, v) => acc + (v.total || 0), 0);
+  const totalFiltrado = filteredSales.reduce(
+    (acc, v) => acc + (v.total || 0),
+    0
+  );
 
   const blueButton = {
     backgroundColor: "#0070f3",
@@ -228,7 +271,7 @@ export default function AdminPanel() {
   if (loading) {
     return (
       <main style={{ padding: 24, fontFamily: "Arial, sans-serif" }}>
-        <p>Verificando credenciais de administrador...</p>
+        <p>Verificando credenciales de administrador...</p>
       </main>
     );
   }
@@ -283,17 +326,37 @@ export default function AdminPanel() {
       {/* === FACTURACIÓN POR FECHAS === */}
       <section style={{ marginTop: 40 }} id="printable-section">
         <h2>📅 Facturación por Fechas</h2>
-        <form onSubmit={handleSearchByDate} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <form
+          onSubmit={handleSearchByDate}
+          style={{
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           <label>Desde:</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
           <label>Hasta:</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-          <button type="submit" style={blueButton}>Buscar</button>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+          <button type="submit" style={blueButton}>
+            Buscar
+          </button>
         </form>
 
         {filteredSales.length > 0 && (
           <>
-            <p><strong>Total del período:</strong> € {totalFiltrado.toFixed(2)}</p>
+            <p>
+              <strong>Total del período:</strong> € {totalFiltrado.toFixed(2)}
+            </p>
             <div style={{ width: "100%", height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -310,8 +373,11 @@ export default function AdminPanel() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <button onClick={handlePrint} style={{ ...blueButton, marginTop: 10 }}>
-              🖨️ Imprimir Facturación Seleccionada
+            <button
+              onClick={handlePrint}
+              style={{ ...blueButton, marginTop: 10 }}
+            >
+              🖨️ Imprimir facturación seleccionada
             </button>
           </>
         )}
@@ -358,100 +424,168 @@ export default function AdminPanel() {
             gap: "20px",
           }}
         >
-          {products.map((p) => (
-            <div
-              key={p._id}
-              style={{
-                background: "#fff",
-                padding: 15,
-                borderRadius: 10,
-                boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                textAlign: "center",
-              }}
-            >
-              <img
-                src={`${API}${p.image?.startsWith("/uploads/") ? "" : "/uploads/"}${p.image?.replace("/uploads/", "") || ""}`}
-                alt={p.name}
-                width="100%"
-                height="150"
-                style={{ objectFit: "cover", borderRadius: 8 }}
-                onError={(e) => { e.currentTarget.src = "/fallback.png"; }}
-              />
-              <h3>{p.name}</h3>
-              <p><strong>€ {p.price}</strong></p>
-              <p>{p.description}</p>
-              <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
-                <button style={blueButton} onClick={() => handleEdit(p)}>✏️ Editar</button>
-                <button
-                  style={{ ...blueButton, backgroundColor: "#e53e3e" }}
-                  onClick={() => handleDelete(p._id)}
+          {products.map((p) => {
+            const img = p.imageUrl || p.image || "";
+            const src = img
+              ? img.startsWith("http")
+                ? img
+                : `${API}${img}`
+              : "/fallback.png";
+
+            return (
+              <div
+                key={p._id}
+                style={{
+                  background: "#fff",
+                  padding: 15,
+                  borderRadius: 10,
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                  textAlign: "center",
+                }}
+              >
+                <img
+                  src={src}
+                  alt={p.name}
+                  width="100%"
+                  height="150"
+                  style={{ objectFit: "cover", borderRadius: 8 }}
+                  onError={(e) => {
+                    e.currentTarget.src = "/fallback.png";
+                  }}
+                />
+                <h3>{p.name}</h3>
+                <p>
+                  <strong>€ {p.price}</strong>
+                </p>
+                <p>{p.description}</p>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 10,
+                  }}
                 >
-                  🗑️ Excluir
-                </button>
+                  <button style={blueButton} onClick={() => handleEdit(p)}>
+                    ✏️ Editar
+                  </button>
+                  <button
+                    style={{ ...blueButton, backgroundColor: "#e53e3e" }}
+                    onClick={() => handleDelete(p._id)}
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Formulário novo produto */}
+        {/* Formulario nuevo producto */}
         <form
           onSubmit={handleAddProduct}
-          style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 10, maxWidth: 400 }}
+          style={{
+            marginTop: 30,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            maxWidth: 400,
+          }}
         >
           <input
-            placeholder="Nome do produto"
+            placeholder="Nombre del producto"
             value={newProduct.name}
-            onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, name: e.target.value })
+            }
             required
           />
           <input
             type="number"
-            placeholder="Preço"
+            placeholder="Precio"
             value={newProduct.price}
-            onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, price: e.target.value })
+            }
             required
           />
           <input
-            placeholder="Descrição"
+            placeholder="Descripción"
             value={newProduct.description}
-            onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, description: e.target.value })
+            }
           />
           <input
             type="file"
-            onChange={(e) => setNewProduct({ ...newProduct, image: e.target.files?.[0] || null })}
+            accept="image/*"
+            onChange={(e) =>
+              setNewProduct({
+                ...newProduct,
+                image: e.target.files?.[0] || null,
+              })
+            }
           />
-          <button type="submit" style={blueButton}>Adicionar Produto</button>
+          <button type="submit" style={blueButton}>
+            Añadir producto
+          </button>
         </form>
       </section>
 
-      {/* === MODAL DE EDIÇÃO === */}
+      {/* === MODAL DE EDICIÓN === */}
       {editingItem && (
         <div
           style={{
             position: "fixed",
-            top: 0, left: 0, width: "100%", height: "100%",
-            background: "rgba(0,0,0,0.5)", display: "flex",
-            justifyContent: "center", alignItems: "center",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <div style={{ background: "white", padding: 20, borderRadius: 8, maxWidth: 400, width: "100%" }}>
-            <h3>Editar Produto</h3>
+          <div
+            style={{
+              background: "white",
+              padding: 20,
+              borderRadius: 8,
+              maxWidth: 400,
+              width: "100%",
+            }}
+          >
+            <h3>Editar producto</h3>
             <input
               value={editingItem.name}
-              onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+              onChange={(e) =>
+                setEditingItem({ ...editingItem, name: e.target.value })
+              }
             />
             <input
               type="number"
               value={editingItem.price}
-              onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })}
+              onChange={(e) =>
+                setEditingItem({ ...editingItem, price: e.target.value })
+              }
             />
             <textarea
               value={editingItem.description}
-              onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+              onChange={(e) =>
+                setEditingItem({
+                  ...editingItem,
+                  description: e.target.value,
+                })
+              }
             />
             <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
-              <button style={blueButton} onClick={handleSaveEdit}>Guardar</button>
-              <button style={{ ...blueButton, backgroundColor: "gray" }} onClick={() => setEditingItem(null)}>
+              <button style={blueButton} onClick={handleSaveEdit}>
+                Guardar
+              </button>
+              <button
+                style={{ ...blueButton, backgroundColor: "gray" }}
+                onClick={() => setEditingItem(null)}
+              >
                 Cancelar
               </button>
             </div>
