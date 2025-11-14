@@ -106,7 +106,10 @@ export default function AdminPanel() {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    if (!token) return router.push("/login");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       let imageUrl = "";
@@ -124,7 +127,6 @@ export default function AdminPanel() {
           },
         });
 
-        // El backend devuelve { ok: true, url: "https://..." }
         imageUrl = up?.data?.url || "";
       }
 
@@ -285,7 +287,7 @@ export default function AdminPanel() {
           alignItems: "center",
         }}
       >
-        <h1>👋 Bienvenido al Panel Administrativo Abner Suazo</h1>
+        <h1>👋 Bienvenido al Panel Administrativo</h1>
         <button style={blueButton} onClick={handleLogout}>
           Cerrar sesión
         </button>
