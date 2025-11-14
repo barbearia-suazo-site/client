@@ -251,7 +251,11 @@ export default function AdminPanel() {
   };
 
   // Totales
-  const totalMensual = salesData.reduce((acc, v) => acc + (v.total || 0), 0);
+  const totalMensual = salesData.reduce(
+  (acc, v) => acc + (v.totalSales || v.total || 0),
+  0
+);
+
   const totalFiltrado = filteredSales.reduce(
     (acc, v) => acc + (v.total || 0),
     0
