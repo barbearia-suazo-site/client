@@ -321,7 +321,7 @@ export default function AdminPanel() {
         </div>
       </section>
 
-      {/* === FACTURACIÓN POR FECHAS === */}
+      {/* === FACTURACIÓN POR FECHAS === */}  
       <section style={{ marginTop: 40 }} id="printable-section">
         <h2>📅 Facturación por Fechas</h2>
         <form
@@ -413,100 +413,76 @@ export default function AdminPanel() {
       </section>
 
       {/* === PRODUCTOS === */}
-<section style={{ marginTop: 40 }}>
-  <h2>🧴 Productos</h2>
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-      gap: 24,
-    }}
-  >
-    {products.map((p) => {
-      const img = p.imageUrl || p.image || "";
-      const src = img
-        ? img.startsWith("http")
-          ? img
-          : `${API}${img}`
-        : "/fallback.png";
-
-      return (
+      <section style={{ marginTop: 40 }}>
+        <h2>🧴 Productos</h2>
         <div
-          key={p._id}
           style={{
-            background: "#fff",
-            padding: 15,
-            borderRadius: 16,
-            boxShadow: "0 6px 18px rgba(0,0,0,0.09)",
-            textAlign: "center",
-            maxWidth: 320,
-            margin: "0 auto",
-            boxSizing: "border-box",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: 24,
           }}
         >
-          <div
-            style={{
-              width: "100%",
-              height: 220,          // 👈 altura fixa para todas as imagens
-              borderRadius: 14,
-              overflow: "hidden",
-              marginBottom: 10,
-              background: "#f5f5f5",
-            }}
-          >
-            <img
-              src={src}
-              alt={p.name}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-              onError={(e) => {
-                e.currentTarget.src = "/fallback.png";
-              }}
-            />
-          </div>
+          {products.map((p) => {
+            const img = p.imageUrl || p.image || "";
+            const src = img
+              ? img.startsWith("http")
+                ? img
+                : `${API}${img}`
+              : "/fallback.png";
 
-          <h3>{p.name}</h3>
-          <p style={{ color: "#666", fontSize: 14, margin: "4px 0 6px" }}>
-            {p.description}
-          </p>
-          <p style={{ marginBottom: 10 }}>
-            <strong>€ {p.price}</strong>
-          </p>
+            return (
+              <div
+                key={p._id}
+                style={{
+                  background: "#fff",
+                  padding: 15,
+                  borderRadius: 16,
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.09)",
+                  textAlign: "center",
+                  maxWidth: 320,
+                  margin: "0 auto",
+                  boxSizing: "border-box",
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    height: 220, // altura fixa para todas as imagens
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    marginBottom: 10,
+                    background: "#f5f5f5",
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt={p.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.src = "/fallback.png";
+                    }}
+                  />
+                </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 10,
-            }}
-          >
-            <button style={blueButton} onClick={() => handleEdit(p)}>
-              ✏️ Editar
-            </button>
-            <button
-              style={{ ...blueButton, backgroundColor: "#e53e3e" }}
-              onClick={() => handleDelete(p._id)}
-            >
-              🗑️ Eliminar
-            </button>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-
-  {/* Formulario nuevo producto permanece igual abaixo... */}
-  {/* (deixa o resto da seção como já está no seu arquivo) */}
-</section>
-          <h3>{p.name}</h3>
-                <p>
+                <h3>{p.name}</h3>
+                <p
+                  style={{
+                    color: "#666",
+                    fontSize: 14,
+                    margin: "4px 0 6px",
+                  }}
+                >
+                  {p.description}
+                </p>
+                <p style={{ marginBottom: 10 }}>
                   <strong>€ {p.price}</strong>
                 </p>
-                <p>{p.description}</p>
+
                 <div
                   style={{
                     display: "flex",
