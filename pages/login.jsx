@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Solo estos correos pueden ir al /admin
 const ADMIN_ALLOWLIST = new Set(["admin@suazo.com", "admin@hiago.com"]);
@@ -126,17 +126,18 @@ export default function Login() {
         onSubmit={handleLogin}
         style={{
           width: "100%",
-          maxWidth: 380,
+          maxWidth: 420,         // 👈 quadrado branco mais largo
           background: "#fff",
-          borderRadius: 14,
+          borderRadius: 16,
           boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
-          padding: "28px 24px",
+          padding: "32px 26px 26px",
+          boxSizing: "border-box", // 👈 inputs não passam para fora
         }}
       >
         <h1
           style={{
             marginBottom: 6,
-            fontSize: "1.7rem",
+            fontSize: "1.8rem",
             color: "#111",
             textAlign: "center",
           }}
@@ -149,7 +150,7 @@ export default function Login() {
             textAlign: "center",
             color: "#666",
             fontSize: ".95rem",
-            marginBottom: 18,
+            marginBottom: 20,
           }}
         >
           Acceso exclusivo para personal autorizado.
@@ -214,6 +215,7 @@ export default function Login() {
             marginTop: 6,
             marginBottom: 12,
             outline: "none",
+            boxSizing: "border-box", // 👈 garante que cabe no card
           }}
         />
 
@@ -239,6 +241,7 @@ export default function Login() {
             marginTop: 6,
             marginBottom: 18,
             outline: "none",
+            boxSizing: "border-box",
           }}
         />
 
