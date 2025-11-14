@@ -17,7 +17,7 @@ export default function Productos() {
       } catch (e) {
         console.error("Error al cargar los productos:", e);
         setErr(
-          "No pudimos cargar los productos. Intenta nuevamente en unos instantes."
+          "No pudimos cargar los productos. Inténtalo nuevamente en unos instantes."
         );
       } finally {
         setLoading(false);
@@ -28,8 +28,8 @@ export default function Productos() {
 
   const buildImageUrl = (image) => {
     if (!image) return null;
-    if (image.startsWith("http")) return image;
-    if (image.startsWith("/uploads")) return `${API}${image}`;
+    if (image.startsWith("http")) return image;          // Cloudinary u otra URL completa
+    if (image.startsWith("/uploads")) return `${API}${image}`; // legado
     return `${API}/uploads/${image}`;
   };
 
@@ -53,7 +53,9 @@ export default function Productos() {
 
   return (
     <main style={{ padding: 24, background: "#f4f4f4", minHeight: "100vh" }}>
-      <h1 style={{ textAlign: "center", marginBottom: 24 }}>Nuestros Productos</h1>
+      <h1 style={{ textAlign: "center", marginBottom: 24 }}>
+        Nuestros Productos
+      </h1>
 
       {products.length === 0 ? (
         <p style={{ textAlign: "center" }}>
@@ -68,7 +70,9 @@ export default function Productos() {
           }}
         >
           {products.map((p) => {
-            const src = buildImageUrl(p.image);
+            // 👇 usa imageUrl primero, y cae a image si es un producto antiguo
+            const src = buildImageUrl(p.imageUrl || p.image);
+
             return (
               <article
                 key={p._id}
@@ -103,7 +107,13 @@ export default function Productos() {
 
                 <h3 style={{ marginBottom: 6 }}>{p.name}</h3>
                 {p.description ? (
-                  <p style={{ color: "#555", fontSize: 14, margin: "0 0 10px" }}>
+                  <p
+                    style={{
+                      color: "#555",
+                      fontSize: 14,
+                      margin: "0 0 10px",
+                    }}
+                  >
                     {p.description}
                   </p>
                 ) : null}
@@ -113,7 +123,9 @@ export default function Productos() {
                 </p>
 
                 {typeof p.stock === "number" ? (
-                  <p style={{ color: "#777", marginTop: 4 }}>Stock: {p.stock}</p>
+                  <p style={{ color: "#777", marginTop: 4 }}>
+                    Stock: {p.stock}
+                  </p>
                 ) : null}
               </article>
             );
