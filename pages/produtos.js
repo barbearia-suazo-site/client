@@ -75,35 +75,37 @@ export default function Productos() {
 
             return (
               <article
-                key={p._id}
-                style={{
-                  padding: 16,
-                  borderRadius: 12,
-                  background: "#fff",
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                }}
-              >
-                {src ? (
-                  <img
-                    src={src}
-                    alt={p.name}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1 / 1",
-                      objectFit: "cover",
-                      borderRadius: 12,
-                      marginBottom: 12,
-                      background: "#fafafa",
-                    }}
-                  />
-                ) : null}
+  key={p._id}
+  style={{
+    padding: 16,
+    borderRadius: 12,
+    background: "#fff",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    maxWidth: 260,        // 👈 largura máxima do card
+    margin: "0 auto",     // 👈 centraliza quando só tem 1
+  }}
+>
+  {src ? (
+    <img
+      src={src}
+      alt={p.name}
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+      style={{
+        width: "100%",
+        aspectRatio: "1 / 1",  // 👈 quadrado
+        objectFit: "cover",
+        borderRadius: 12,
+        marginBottom: 12,
+        background: "#fafafa",
+      }}
+    />
+  ) : null}
 
                 <h3 style={{ marginBottom: 6 }}>{p.name}</h3>
                 {p.description ? (
