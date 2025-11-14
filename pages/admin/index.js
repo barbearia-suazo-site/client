@@ -60,7 +60,6 @@ export default function AdminPanel() {
         }
 
         await loadData(token);
-        intervalId = setInterval(() => loadData(token), 10000);
         setLoading(false);
       } catch (err) {
         console.error(
