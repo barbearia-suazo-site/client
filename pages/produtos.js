@@ -28,7 +28,7 @@ export default function Productos() {
 
   const buildImageUrl = (image) => {
     if (!image) return null;
-    if (image.startsWith("http")) return image;
+    if (image.startsWith("http")) return image; // Cloudinary u otra URL
     if (image.startsWith("/uploads")) return `${API}${image}`;
     return `${API}/uploads/${image}`;
   };
@@ -65,8 +65,8 @@ export default function Productos() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: 24,
           }}
         >
           {products.map((p) => {
@@ -77,36 +77,47 @@ export default function Productos() {
                 key={p._id}
                 style={{
                   padding: 16,
-                  borderRadius: 12,
+                  borderRadius: 18,
                   background: "#fff",
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                  boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   textAlign: "center",
-                  maxWidth: 260,
+                  maxWidth: 320,
                   margin: "0 auto",
+                  boxSizing: "border-box",
                 }}
               >
                 {src ? (
-                  <img
-                    src={src}
-                    alt={p.name}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
+                  <div
                     style={{
                       width: "100%",
-                      aspectRatio: "1 / 1",
-                      objectFit: "cover",
-                      borderRadius: 12,
+                      height: 260,            // 👈 altura fixa p/ todas as imagens
+                      borderRadius: 16,
+                      overflow: "hidden",
                       marginBottom: 12,
                       background: "#fafafa",
                     }}
-                  />
+                  >
+                    <img
+                      src={src}
+                      alt={p.name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover", // 👈 recorta, mas mantém tudo do mesmo tamanho
+                        display: "block",
+                      }}
+                    />
+                  </div>
                 ) : null}
 
-                <h3 style={{ marginBottom: 6 }}>{p.name}</h3>
+                <h3 style={{ marginBottom: 4 }}>{p.name}</h3>
+
                 {p.description ? (
                   <p
                     style={{
