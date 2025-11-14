@@ -252,12 +252,12 @@ export default function AdminPanel() {
 
   // Totales
   const totalMensual = salesData.reduce(
-  (acc, v) => acc + (v.totalSales || v.total || 0),
-  0
-);
+    (acc, v) => acc + (v.totalSales || v.total || 0),
+    0
+  );
 
   const totalFiltrado = filteredSales.reduce(
-    (acc, v) => acc + (v.total || 0),
+    (acc, v) => acc + (v.totalSales || v.total || 0),
     0
   );
 
@@ -309,12 +309,7 @@ export default function AdminPanel() {
         </p>
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={salesData.map((s) => ({
-                month: new Date(s.createdAt).toLocaleDateString(),
-                totalSales: s.total,
-              }))}
-            >
+            <BarChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -325,7 +320,7 @@ export default function AdminPanel() {
         </div>
       </section>
 
-      {/* === FACTURACIÓN POR FECHAS === */}  
+      {/* === FACTURACIÓN POR FECHAS === */}
       <section style={{ marginTop: 40 }} id="printable-section">
         <h2>📅 Facturación por Fechas</h2>
         <form
@@ -361,14 +356,9 @@ export default function AdminPanel() {
             </p>
             <div style={{ width: "100%", height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={filteredSales.map((s) => ({
-                    date: new Date(s.createdAt).toLocaleDateString(),
-                    totalSales: s.total,
-                  }))}
-                >
+                <BarChart data={filteredSales}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="totalSales" fill="#28a745" />
