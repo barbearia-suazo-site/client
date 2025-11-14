@@ -285,7 +285,7 @@ export default function AdminPanel() {
           alignItems: "center",
         }}
       >
-        <h1>👋 Bienvenido al Panel Administrativo</h1>
+        <h1>👋 Bienvenido al Panel Administrativo Abner Suazo</h1>
         <button style={blueButton} onClick={handleLogout}>
           Cerrar sesión
         </button>
