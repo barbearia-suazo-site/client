@@ -434,26 +434,31 @@ export default function AdminPanel() {
               : "/fallback.png";
 
             return (
-              <div
-                key={p._id}
-                style={{
-                  background: "#fff",
-                  padding: 15,
-                  borderRadius: 10,
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                  textAlign: "center",
-                }}
-              >
-                <img
-                  src={src}
-                  alt={p.name}
-                  width="100%"
-                  height="150"
-                  style={{ objectFit: "cover", borderRadius: 8 }}
-                  onError={(e) => {
-                    e.currentTarget.src = "/fallback.png";
-                  }}
-                />
+             <div
+  key={p._id}
+  style={{
+    background: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    textAlign: "center",
+    maxWidth: 260,        // 👈 card mais compacto
+    margin: "0 auto",     // 👈 centralizado quando só tem 1
+  }}
+>
+  <img
+    src={src}
+    alt={p.name}
+    style={{
+      width: "100%",
+      aspectRatio: "1 / 1", // 👈 quadrado
+      objectFit: "cover",
+      borderRadius: 8,
+    }}
+    onError={(e) => {
+      e.currentTarget.src = "/fallback.png";
+    }}
+  />
                 <h3>{p.name}</h3>
                 <p>
                   <strong>€ {p.price}</strong>
