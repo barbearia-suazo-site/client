@@ -421,7 +421,7 @@ export default function AdminPanel() {
         </p>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <iframe
-            src="https://calendar.google.com/calendar/u/0?cid=c3Vhem9Ac3Vhem9iYXJiZXIuY29t&src=Y19jODhhNTM3Njk0MGY2MmVjNmM5ZDY3NjQ2YTg1MzA4MjQxM2NlZGM1ZDc5OTc3NmZiMWE5MjI5MzcwYjQ1MDk0QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20&src=Y182ZjE1YTRjMDhiYmY4ZWY3ODkwNjBiMGVhNDcxYTc1YzdiZGFmMWZiZTZmNWRjZmZhMWJlYjg2YTY4Y2E5OTQyQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23000000&color=%237cb342&color=%23039be5"
+            src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Europe%2FMadrid&showCalendars=0&mode=MONTH&src=c3Vhem9Ac3Vhem9iYXJiZXIuY29t&src=Y19jODhhNTM3Njk0MGY2MmVjNmM5ZDY3NjQ2YTg1MzA4MjQxM2NlZGM1ZDc5OTc3NmZiMWE5MjI5MzcwYjQ1MDk0QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20&src=Y182ZjE1YTRjMDhiYmY4ZWY3ODkwNjBiMGVhNDcxYTc1YzdiZGFmMWZiZTZmNWRjZmZhMWJlYjg2YTY4Y2E5OTQyQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23000000&color=%237cb342&color=%23039be5"
             style={{
               border: "0",
               width: "100%",
