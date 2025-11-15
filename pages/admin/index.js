@@ -19,8 +19,9 @@ export default function AdminPanel() {
 
   // Estados principales
   const [loading, setLoading] = useState(true);
-  const [salesData, setSalesData] = useState([]);       // ventas totales (agrupadas por mes)
-  const [filteredSales, setFilteredSales] = useState([]); // ventas filtradas por fecha
+  const [salesData, setSalesData] = useState([]);        // ventas totales (por mes)
+  const [filteredSales, setFilteredSales] = useState([]); // ventas filtradas
+  const [hasSearched, setHasSearched] = useState(false);  // si ya se hizo búsqueda por fechas
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [products, setProducts] = useState([]);
@@ -223,8 +224,8 @@ export default function AdminPanel() {
         `${API}/api/sales?start=${startDate}&end=${endDate}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Mesmo formato: [{ month, totalSales }]
       setFilteredSales(res.data || []);
+      setHasSearched(true); // marca que ya se hizo una búsqueda
     } catch (err) {
       console.error(
         "Error al buscar por fechas:",
@@ -239,9 +240,10 @@ export default function AdminPanel() {
     setStartDate("");
     setEndDate("");
     setFilteredSales([]);
+    setHasSearched(false);
   };
 
-  // 🖨️ Imprimir sección
+  // 🖨️ Imprimir seção filtrada
   const handlePrint = () => {
     const el = document.getElementById("printable-section");
     if (!el) return;
@@ -268,6 +270,16 @@ export default function AdminPanel() {
     (acc, v) => acc + (v.totalSales || v.total || 0),
     0
   );
+
+  // Dados para o gráfico filtrado:
+  // - se houver vendas, usa filteredSales
+  // - se NÃO houver vendas mas já buscamos, mostra um ponto "Sin ventas" com 0
+  const filteredChartData =
+    filteredSales.length > 0
+      ? filteredSales
+      : hasSearched
+      ? [{ month: "Sin ventas", totalSales: 0 }]
+      : [];
 
   const blueButton = {
     backgroundColor: "#0070f3",
@@ -328,7 +340,7 @@ export default function AdminPanel() {
                 <XAxis dataKey="month" />
                 <YAxis
                   allowDecimals={false}
-                  domain={[0, "dataMax + 100"]} // escala automática (sobe quando faturação aumentar)
+                  domain={[0, "dataMax + 100"]} // escala automática
                 />
                 <Tooltip />
                 <Bar dataKey="totalSales" fill="#0070f3" />
@@ -375,14 +387,23 @@ export default function AdminPanel() {
           </button>
         </form>
 
-        {filteredSales.length > 0 && (
+        {/* Só mostra resultado depois que o usuário buscou ao menos uma vez */}
+        {hasSearched && (
           <>
             <p>
               <strong>Total del período:</strong> € {totalFiltrado.toFixed(2)}
             </p>
-            <div style={{ width: "100%", height: 300 }}>
+
+            {filteredChartData.length === 1 &&
+            filteredChartData[0].month === "Sin ventas" ? (
+              <p style={{ color: "#555", marginTop: 8 }}>
+                No hay ventas registradas en este rango de fechas.
+              </p>
+            ) : null}
+
+            <div style={{ width: "100%", height: 300, marginTop: 10 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredSales}>
+                <BarChart data={filteredChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis
@@ -394,6 +415,7 @@ export default function AdminPanel() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+
             <button
               onClick={handlePrint}
               style={{ ...blueButton, marginTop: 10 }}
@@ -404,7 +426,7 @@ export default function AdminPanel() {
         )}
       </section>
 
-      {/* === AGENDA EN TIEMPO REAL === */}
+      {/* === AGENDA EN TIEMPO REAL (com o seu link) === */}
       <section
         style={{
           marginTop: 50,
