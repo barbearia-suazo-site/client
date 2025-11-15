@@ -1,11 +1,13 @@
-// client/pages/servicios.js
+// client/pages/servicos.js
 import { useState } from "react";
+import axios from "axios";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function Servicios() {
   const [loading] = useState(false);
 
-  // --- Lista de serviços com links já inseridos ---
-  // Se quiser trocar os links, edite a propriedade `link` abaixo
+  // --- Lista de servicios con links ya insertados ---
   const servicios = [
     {
       nombre: "Corte clásico (sin degradado)",
@@ -13,14 +15,14 @@ export default function Servicios() {
         "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
       precio: 15,
       duracion: 30,
-      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9"
+      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
     },
     {
       nombre: "Corte y barba",
       descripcion: "Corte de cabello y arreglo completo de barba.",
       precio: 25,
       duracion: 45,
-      link: "https://calendar.app.google/uEZNLkeRfBgPKrDy7"
+      link: "https://calendar.app.google/uEZNLkeRfBgPKrDy7",
     },
     {
       nombre: "Corte Fade (degradado)",
@@ -28,7 +30,7 @@ export default function Servicios() {
         "Corte moderno con degradado suave y líneas precisas.",
       precio: 17,
       duracion: 30,
-      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8"
+      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
     },
     {
       nombre: "Corte, lavado y peinado (Hombre)",
@@ -36,14 +38,14 @@ export default function Servicios() {
         "Corte completo con lavado, secado y peinado con producto de acabado.",
       precio: 20,
       duracion: 40,
-      link: "https://calendar.app.google/gmi2zWDcZT1YLYNm6"
+      link: "https://calendar.app.google/gmi2zWDcZT1YLYNm6",
     },
     {
       nombre: "Barba",
       descripcion: "Arreglo de barba y acabado definido.",
       precio: 10,
       duracion: 20,
-      link: "https://calendar.app.google/N62zCkiLCovv4dEu8"
+      link: "https://calendar.app.google/N62zCkiLCovv4dEu8",
     },
     {
       nombre: "Niños",
@@ -51,7 +53,7 @@ export default function Servicios() {
         "Corte especial para niños hasta 12 años, con paciencia y estilo.",
       precio: 15,
       duracion: 30,
-      link: "https://calendar.app.google/une16oY5taqxddMg8"
+      link: "https://calendar.app.google/une16oY5taqxddMg8",
     },
     {
       nombre: "Jubilados",
@@ -59,7 +61,7 @@ export default function Servicios() {
         "Corte clásico para hombres mayores con descuento especial.",
       precio: 13,
       duracion: 30,
-      link: "https://calendar.app.google/MtkahktmAKnvrLvD8"
+      link: "https://calendar.app.google/MtkahktmAKnvrLvD8",
     },
     {
       nombre: "Mascarilla facial",
@@ -67,7 +69,7 @@ export default function Servicios() {
         "Tratamiento facial purificante para revitalizar la piel.",
       precio: 10,
       duracion: 15,
-      link: "https://calendar.app.google/AcGL8wgtzbgP3hwh8"
+      link: "https://calendar.app.google/AcGL8wgtzbgP3hwh8",
     },
     {
       nombre: "Coloración",
@@ -75,7 +77,7 @@ export default function Servicios() {
         "Tinte completo o parcial para cabello o barba.",
       precio: 50,
       duracion: 60,
-      link: "https://calendar.app.google/ffPjbmRC7mwc9gbRA"
+      link: "https://calendar.app.google/ffPjbmRC7mwc9gbRA",
     },
     {
       nombre: "Servicio VIP con Suazo",
@@ -83,17 +85,43 @@ export default function Servicios() {
         "Atención exclusiva y personalizada por Suazo, con detalles premium.",
       precio: 30,
       duracion: 60,
-      link: "https://calendar.app.google/GPTF2UdUpFYcKdUr7"
+      link: "https://calendar.app.google/GPTF2UdUpFYcKdUr7",
     },
   ];
 
-  // Handler del botón: abre link si existe, si no redirige internamente a /agendar
+  // Cuando el cliente hace clic en “Reservar cita”:
+  // 1) Registramos la reserva/venta en nuestro backend (/api/bookings)
+  // 2) Abrimos el enlace de Google Calendar como antes
   const onReservarClick = (servicio) => {
+    try {
+      if (API) {
+        const payload = {
+          name: "Reserva online",
+          email: "online@suazobarber.com",      // email genérico solo para registro
+          service: servicio.nombre,
+          date: new Date().toISOString(),      // momento del clic (no la hora real del Google Calendar)
+          duration: servicio.duracion,
+          price: servicio.precio,              // 💶 aquí va el precio que se usa en la venta
+        };
+
+        // Dispara el POST pero sin bloquear la apertura del calendario
+        axios
+          .post(`${API}/api/bookings`, payload)
+          .catch((err) => {
+            console.error(
+              "Error al registrar reserva/facturación:",
+              err?.response?.data || err.message
+            );
+          });
+      }
+    } catch (err) {
+      console.error("Error inesperado al registrar reserva:", err);
+    }
+
+    // 🔗 Mantiene el comportamiento actual: abrir Google Calendar
     if (servicio.link) {
-      // Abre el enlace en una nueva pestaña sin prompts ni confirmaciones
       window.open(servicio.link, "_blank", "noopener,noreferrer");
     } else {
-      // Si prefieres abrir en nueva pestaña: window.open('/agendar', '_blank')
       window.location.href = "/agendar";
     }
   };
