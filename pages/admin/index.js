@@ -19,8 +19,8 @@ export default function AdminPanel() {
 
   // Estados principales
   const [loading, setLoading] = useState(true);
-  const [salesData, setSalesData] = useState([]);
-  const [filteredSales, setFilteredSales] = useState([]);
+  const [salesData, setSalesData] = useState([]);       // ventas totales (agrupadas por mes)
+  const [filteredSales, setFilteredSales] = useState([]); // ventas filtradas por fecha
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [products, setProducts] = useState([]);
@@ -57,11 +57,8 @@ export default function AdminPanel() {
           return;
         }
 
-        // ✅ Já libera a tela do admin
+        await loadData(token);
         setLoading(false);
-
-        // 🔄 Carrega vendas + produtos sem travar a UI
-        loadData(token);
       } catch (err) {
         console.error(
           "Error al verificar credenciales:",
@@ -86,6 +83,7 @@ export default function AdminPanel() {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
+      // sales.data vem como [{ month: 'Nov 2025', totalSales: 50 }, ...]
       setSalesData(sales.data || []);
       setProducts(prod.data || []);
     } catch (err) {
@@ -121,7 +119,7 @@ export default function AdminPanel() {
         const up = await axios.post(`${API}/api/upload`, form, {
           headers: {
             Authorization: `Bearer ${token}`,
-            // No fijar Content-Type: axios lo hace solo
+            // axios define Content-Type automáticamente
           },
         });
 
@@ -133,7 +131,7 @@ export default function AdminPanel() {
         name: newProduct.name,
         price: Number(newProduct.price),
         description: newProduct.description,
-        imageUrl, // el backend lo guardará en "image"
+        imageUrl, // el backend lo guardará en "imageUrl"
       };
 
       await axios.post(`${API}/api/products`, payload, {
@@ -225,6 +223,7 @@ export default function AdminPanel() {
         `${API}/api/sales?start=${startDate}&end=${endDate}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      // Mesmo formato: [{ month, totalSales }]
       setFilteredSales(res.data || []);
     } catch (err) {
       console.error(
@@ -233,6 +232,13 @@ export default function AdminPanel() {
       );
       alert("Error al buscar la facturación.");
     }
+  };
+
+  // 🔁 Limpiar filtros y volver a la vista general
+  const handleClearDates = () => {
+    setStartDate("");
+    setEndDate("");
+    setFilteredSales([]);
   };
 
   // 🖨️ Imprimir sección
@@ -309,17 +315,27 @@ export default function AdminPanel() {
         <p style={{ fontSize: 18, fontWeight: "bold", color: "#0070f3" }}>
           Total: € {totalMensual.toFixed(2)}
         </p>
-        <div style={{ width: "100%", height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={salesData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="totalSales" fill="#0070f3" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+
+        {salesData.length === 0 ? (
+          <p style={{ marginTop: 10, color: "#555" }}>
+            Aún no hay ventas registradas.
+          </p>
+        ) : (
+          <div style={{ width: "100%", height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis
+                  allowDecimals={false}
+                  domain={[0, "dataMax + 100"]} // escala automática (sobe quando faturação aumentar)
+                />
+                <Tooltip />
+                <Bar dataKey="totalSales" fill="#0070f3" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </section>
 
       {/* === FACTURACIÓN POR FECHAS === */}
@@ -332,6 +348,7 @@ export default function AdminPanel() {
             gap: 10,
             alignItems: "center",
             flexWrap: "wrap",
+            marginBottom: 10,
           }}
         >
           <label>Desde:</label>
@@ -349,6 +366,13 @@ export default function AdminPanel() {
           <button type="submit" style={blueButton}>
             Buscar
           </button>
+          <button
+            type="button"
+            style={{ ...blueButton, backgroundColor: "#6c757d" }}
+            onClick={handleClearDates}
+          >
+            Limpiar fechas
+          </button>
         </form>
 
         {filteredSales.length > 0 && (
@@ -361,7 +385,10 @@ export default function AdminPanel() {
                 <BarChart data={filteredSales}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
-                  <YAxis />
+                  <YAxis
+                    allowDecimals={false}
+                    domain={[0, "dataMax + 100"]}
+                  />
                   <Tooltip />
                   <Bar dataKey="totalSales" fill="#28a745" />
                 </BarChart>
@@ -443,7 +470,7 @@ export default function AdminPanel() {
                 <div
                   style={{
                     width: "100%",
-                    height: 220, // altura fixa para todas as imagens
+                    height: 220,
                     borderRadius: 14,
                     overflow: "hidden",
                     marginBottom: 10,
