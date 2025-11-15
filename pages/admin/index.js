@@ -57,8 +57,11 @@ export default function AdminPanel() {
           return;
         }
 
-        await loadData(token);
+        // ✅ Já libera a tela do admin
         setLoading(false);
+
+        // 🔄 Carrega vendas + produtos sem travar a UI
+        loadData(token);
       } catch (err) {
         console.error(
           "Error al verificar credenciales:",
@@ -70,7 +73,6 @@ export default function AdminPanel() {
     };
 
     init();
-    // sin interval para no hacer “parpadear” la lista
   }, [router]);
 
   // 🔄 Cargar ventas + productos
