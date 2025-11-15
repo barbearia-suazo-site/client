@@ -104,7 +104,7 @@ export default function Home() {
             textAlign: "center",
           }}
         >
-          🧔 Síguenos en Instagram
+           Síguenos en Instagram
         </h2>
 
         <p
