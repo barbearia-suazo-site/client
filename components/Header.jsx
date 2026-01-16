@@ -46,7 +46,6 @@ export default function Header() {
             Reservar
           </Link>
           <Link href="/admin" style={{ color: '#fff', textDecoration: 'none' }}>
-            Admin
           </Link>
         </nav>
       </div>
