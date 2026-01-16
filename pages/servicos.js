@@ -82,7 +82,7 @@ export default function Servicios() {
     {
       nombre: "Servicio VIP con Suazo",
       descripcion:
-        "Atención exclusiva y personalizada por Suazo, con detalles premium.",
+        "Atención exclusiva y personalizada por Suazo, con asesoramiento, Bebida y Máscara Facial (SIN BARBA).",
       precio: 30,
       duracion: 60,
       link: "https://calendar.app.google/GPTF2UdUpFYcKdUr7",
