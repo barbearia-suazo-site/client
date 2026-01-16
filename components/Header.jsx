@@ -45,9 +45,6 @@ export default function Header() {
           <Link href="/agendar" style={{ color: '#fff', marginRight: 12, textDecoration: 'none' }}>
             Reservar
           </Link>
-          <Link href="/admin" style={{ color: '#fff', textDecoration: 'none' }}>
-            Admin
-          </Link>
         </nav>
       </div>
     </header>
