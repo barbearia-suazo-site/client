@@ -31,7 +31,7 @@ export default function Header() {
             height={48}
             style={{ borderRadius: '50%', marginRight: 8 }}
           />
-          <h2 style={{ margin: 0, color: '#2b72b5' }}></h2>
+          <h2 style={{ margin: 0, color: '#2b72b5' }}>Suazo Barber</h2>
         </Link>
 
         {/* Menu */}
