@@ -26,7 +26,7 @@ export default function Header() {
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <Image
             src="/logo.png" // coloque sua logo dentro da pasta /public
-            alt="Suazo Barber"
+            alt="Logo"
             width={48}
             height={48}
             style={{ borderRadius: '50%', marginRight: 8 }}
