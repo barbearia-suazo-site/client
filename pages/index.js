@@ -1,202 +1,215 @@
-import Head from 'next/head';
-import { useEffect } from "react";
+// client/pages/servicos.js
+import { useState } from "react";
+import axios from "axios";
 
-export default function Home() {
-  useEffect(() => {
-    // Carga el script de Instagram al montar la página
-    const script = document.createElement("script");
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-    document.body.appendChild(script);
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-    return () => {
-      // Limpieza al desmontar el componente
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
+export default function Servicios() {
+  const [loading] = useState(false);
+
+  // --- Lista de servicios con links ya insertados ---
+  const servicios = [
+    {
+      nombre: "Corte clásico (sin degradado)",
+      descripcion:
+        "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
+      precio: 15,
+      duracion: 30,
+      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
+    },
+    {
+      nombre: "Corte y barba",
+      descripcion: "Corte de cabello y arreglo completo de barba.",
+      precio: 25,
+      duracion: 45,
+      link: "https://calendar.app.google/uEZNLkeRfBgPKrDy7",
+    },
+    {
+      nombre: "Corte Fade (degradado)",
+      descripcion:
+        "Corte moderno con degradado suave y líneas precisas.",
+      precio: 17,
+      duracion: 30,
+      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
+    },
+    {
+      nombre: "Corte, lavado y peinado (Hombre)",
+      descripcion:
+        "Corte completo con lavado, secado y peinado con producto de acabado.",
+      precio: 20,
+      duracion: 40,
+      link: "https://calendar.app.google/gmi2zWDcZT1YLYNm6",
+    },
+    {
+      nombre: "Barba",
+      descripcion: "Arreglo de barba y acabado definido.",
+      precio: 10,
+      duracion: 20,
+      link: "https://calendar.app.google/N62zCkiLCovv4dEu8",
+    },
+    {
+      nombre: "Niños",
+      descripcion:
+        "Corte especial para niños hasta 12 años, con paciencia y estilo.",
+      precio: 15,
+      duracion: 30,
+      link: "https://calendar.app.google/une16oY5taqxddMg8",
+    },
+    {
+      nombre: "Jubilados",
+      descripcion:
+        "Corte clásico para hombres mayores con descuento especial.",
+      precio: 13,
+      duracion: 30,
+      link: "https://calendar.app.google/MtkahktmAKnvrLvD8",
+    },
+    {
+      nombre: "Mascarilla facial",
+      descripcion:
+        "Tratamiento facial purificante para revitalizar la piel.",
+      precio: 10,
+      duracion: 15,
+      link: "https://calendar.app.google/AcGL8wgtzbgP3hwh8",
+    },
+    {
+      nombre: "Coloración",
+      descripcion:
+        "Tinte completo o parcial para cabello o barba.",
+      precio: 50,
+      duracion: 60,
+      link: "https://calendar.app.google/ffPjbmRC7mwc9gbRA",
+    },
+    {
+      nombre: "Servicio VIP con Suazo",
+      descripcion:
+        "Atención exclusiva y personalizada por Suazo, con asesoramiento, Bebida y Máscara Facial (SIN BARBA).",
+      precio: 30,
+      duracion: 60,
+      link: "https://calendar.app.google/GPTF2UdUpFYcKdUr7",
+    },
+  ];
+
+  // Cuando el cliente hace clic en “Reservar cita”:
+  // 1) Registramos la reserva/venta en nuestro backend (/api/bookings)
+  // 2) Abrimos el enlace de Google Calendar como antes
+  const onReservarClick = (servicio) => {
+    try {
+      if (API) {
+        const payload = {
+          name: "Reserva online",
+          email: "online@suazobarber.com",      // email genérico solo para registro
+          service: servicio.nombre,
+          date: new Date().toISOString(),      // momento del clic (no la hora real del Google Calendar)
+          duration: servicio.duracion,
+          price: servicio.precio,              //  aquí va el precio que se usa en la venta
+        };
+
+        // Dispara el POST pero sin bloquear la apertura del calendario
+        axios
+          .post(`${API}/api/bookings`, payload)
+          .catch((err) => {
+            console.error(
+              "Error al registrar reserva/facturación:",
+              err?.response?.data || err.message
+            );
+          });
       }
-    };
-  }, []);
+    } catch (err) {
+      console.error("Error inesperado al registrar reserva:", err);
+    }
+
+    // 🔗 Mantiene el comportamiento actual: abrir Google Calendar
+    if (servicio.link) {
+      window.open(servicio.link, "_blank", "noopener,noreferrer");
+    } else {
+      window.location.href = "/agendar";
+    }
+  };
 
   return (
-    <main style={{ padding: 0, margin: 0 }}>
-      {/* === Hero con imagen de fondo === */}
-      <section
+    <main
+      style={{
+        padding: "40px 24px",
+        background: "#f7f7f7",
+        minHeight: "100vh",
+        fontFamily: "'Poppins', sans-serif",
+      }}
+    >
+      <h1
         style={{
-          position: "relative",
-          height: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          textAlign: "center",
+          marginBottom: 32,
+          fontSize: 32,
+          color: "#333",
+        }}
+      >
+        💈 Nuestros Servicios
+      </h1>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: 20,
           justifyContent: "center",
-          color: "white",
-          textAlign: "center",
-          backgroundImage: "url('/images/barber-bg.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
         }}
       >
-        {/* Capa semitransparente */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.55)",
-            zIndex: 1,
-          }}
-        />
-
-        {/* Texto principal */}
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <h1 style={{ fontSize: "3rem", marginBottom: 20 }}>
-            Bienvenido a Suazo Barber
-          </h1>
-          <p
-            style={{
-              fontSize: "1.2rem",
-              marginBottom: 30,
-              maxWidth: 600,
-              lineHeight: 1.5,
-              marginInline: "auto",
-            }}
-          >
-            Estilo, precisión y atención personalizada. En Suazo Barber
-            encontrarás un ambiente moderno y profesional.
-          </p>
-          <a
-            href="/servicos"
-            style={{
-              backgroundColor: "#0066cc",
-              padding: "12px 24px",
-              borderRadius: 6,
-              color: "white",
-              fontWeight: "bold",
-              textDecoration: "none",
-              transition: "background 0.3s",
-              display: "inline-block",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.background = "#0055aa";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.background = "#0066cc";
-            }}
-          >
-            💈 Reservar una cita
-          </a>
-        </div>
-      </section>
-
-      {/* === Feed de Instagram === */}
-      <section
-        style={{
-          background: "#fff",
-          padding: "60px 24px",
-          textAlign: "center",
-        }}
-      >
-        <h2
-          style={{
-            marginBottom: "30px",
-            fontSize: "2rem",
-            color: "#333",
-            textAlign: "center",
-          }}
-        >
-           Síguenos en Instagram
-        </h2>
-
-        <p
-          style={{
-            marginBottom: "20px",
-            color: "#555",
-            textAlign: "center",
-          }}
-        >
-          Mira nuestros últimos estilos y cortes en{" "}
-          <a
-            href="https://www.instagram.com/suazo_barber/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              backgroundColor: "#0095f6", // Azul estilo Instagram
-              color: "#fff",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              textDecoration: "none",
-              fontWeight: "bold",
-              transition: "background 0.3s",
-              display: "inline-block",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#007acc";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#0095f6";
-            }}
-          >
-            @suazo_barber
-          </a>
-        </p>
-
-        {/* Publicación de Instagram embebida (perfil Suazo) */}
-        <section
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-            textAlign: "center",
-            padding: "20px 0",
-          }}
-        >
-          <blockquote
-            className="instagram-media"
-            data-instgrm-permalink="https://www.instagram.com/suazo_barber/"
-            data-instgrm-version="14"
+        {servicios.map((s, i) => (
+          <div
+            key={i}
             style={{
               background: "#fff",
-              border: 0,
-              margin: "0 auto",
-              maxWidth: "540px",
-              width: "100%",
-              minWidth: "326px",
-              padding: 0,
-              display: "flex",
-              justifyContent: "center",
+              borderRadius: 12,
+              border: "2px solid #007bff",
+              boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
+              padding: 20,
+              textAlign: "center",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
             }}
-          />
-        </section>
-      </section>
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(0,0,0,0.15)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 3px 10px rgba(0,0,0,0.1)")
+            }
+          >
+            <h3 style={{ marginBottom: 8, color: "#222" }}>{s.nombre}</h3>
+            <p style={{ color: "#555", fontSize: 14, marginBottom: 12 }}>
+              {s.descripcion}
+            </p>
+            <p style={{ margin: "6px 0", fontWeight: "bold", fontSize: 16 }}>
+              💶 {s.precio} €
+            </p>
+            <p style={{ color: "#777", fontSize: 14 }}>⏱ {s.duracion} min</p>
 
-      {/* === Sección de ubicación === */}
-      <section
-        style={{
-          textAlign: "center",
-          padding: "60px 24px",
-          background: "#f9f9f9",
-        }}
-      >
-        <h2 style={{ marginBottom: 16 }}>Nuestra ubicación</h2>
-        <p style={{ marginBottom: 16 }}>
-          Ven a visitarnos en nuestro local en Barcelona:
-        </p>
-
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5986.913964178672!2d2.1401436848266018!3d41.385881122102255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a3f049b1ffb5%3A0xa70c96848064def3!2sSuazo%20Barber!5e0!3m2!1ses!2ses!4v1761577240401!5m2!1ses!2ses"
-            width="800"
-            height="600"
-            style={{ border: 0, borderRadius: 12, maxWidth: 1000, width: "100%" }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Ubicación de Suazo Barber"
-          ></iframe>
-        </div>
-      </section>
+            <button
+              onClick={() => onReservarClick(s)}
+              style={{
+                marginTop: 12,
+                background: loading ? "#ccc" : "#007bff",
+                color: "white",
+                border: "none",
+                padding: "10px 16px",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontWeight: "500",
+                transition: "background 0.2s ease",
+              }}
+              disabled={loading}
+              onMouseEnter={(e) =>
+                (e.target.style.background = loading ? "#ccc" : "#0056b3")
+              }
+              onMouseLeave={(e) =>
+                (e.target.style.background = loading ? "#ccc" : "#007bff")
+              }
+            >
+              {loading ? "Procesando..." : "Reservar cita"}
+            </button>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
