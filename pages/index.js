@@ -187,8 +187,8 @@ export default function Home() {
         <div style={{ display: "flex", justifyContent: "center" }}>
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5986.913964178672!2d2.1401436848266018!3d41.385881122102255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a3f049b1ffb5%3A0xa70c96848064def3!2sSuazo%20Barber!5e0!3m2!1ses!2ses!4v1761577240401!5m2!1ses!2ses"
-            width="800"
-            height="600"
+            width="600"
+            height="400"
             style={{ border: 0, borderRadius: 12, maxWidth: 1000, width: "100%" }}
             allowFullScreen
             loading="lazy"
