@@ -10,12 +10,12 @@ export default function Servicios() {
   // --- Lista de servicios con links ya insertados ---
   const servicios = [
     {
-      nombre: "Corte Fade (degradado)",
+      nombre: "Corte clásico (sin degradado)",
       descripcion:
-        "Corte moderno con degradado suave y líneas precisas.",
-      precio: 17,
+        "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
+      precio: 15,
       duracion: 30,
-      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
+      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
     },
     {
       nombre: "Corte y barba",
@@ -25,12 +25,12 @@ export default function Servicios() {
       link: "https://calendar.app.google/uEZNLkeRfBgPKrDy7",
     },
     {
-      nombre: "Corte clásico (sin degradado)",
+      nombre: "Corte Fade (degradado)",
       descripcion:
-        "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
-      precio: 15,
+        "Corte moderno con degradado suave y líneas precisas.",
+      precio: 17,
       duracion: 30,
-      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
+      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
     },
     {
       nombre: "Corte, lavado y peinado (Hombre)",
@@ -101,7 +101,7 @@ export default function Servicios() {
           service: servicio.nombre,
           date: new Date().toISOString(),      // momento del clic (no la hora real del Google Calendar)
           duration: servicio.duracion,
-          price: servicio.precio,              // 💶 aquí va el precio que se usa en la venta
+          price: servicio.precio,              //  aquí va el precio que se usa en la venta
         };
 
         // Dispara el POST pero sin bloquear la apertura del calendario
@@ -160,6 +160,7 @@ export default function Servicios() {
             style={{
               background: "#fff",
               borderRadius: 12,
+              border: "2px solid #007bff",
               boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
               padding: 20,
               textAlign: "center",
