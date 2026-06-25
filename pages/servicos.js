@@ -10,12 +10,12 @@ export default function Servicios() {
   // --- Lista de servicios con links ya insertados ---
   const servicios = [
     {
-      nombre: "Corte clásico (sin degradado)",
+      nombre: "Corte Fade (degradado)",
       descripcion:
-        "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
-      precio: 15,
+        "Corte moderno con degradado suave y líneas precisas.",
+      precio: 17,
       duracion: 30,
-      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
+      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
     },
     {
       nombre: "Corte y barba",
@@ -25,12 +25,12 @@ export default function Servicios() {
       link: "https://calendar.app.google/uEZNLkeRfBgPKrDy7",
     },
     {
-      nombre: "Corte Fade (degradado)",
+      nombre: "Corte clásico (sin degradado)",
       descripcion:
-        "Corte moderno con degradado suave y líneas precisas.",
-      precio: 17,
+        "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
+      precio: 15,
       duracion: 30,
-      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
+      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
     },
     {
       nombre: "Corte, lavado y peinado (Hombre)",
