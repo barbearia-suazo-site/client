@@ -1,215 +1,282 @@
-// client/pages/servicos.js
-import { useState } from "react";
+// client/pages/login.jsx
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import axios from "axios";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function Servicios() {
-  const [loading] = useState(false);
+// Solo estos correos pueden ir al /admin
+const ADMIN_ALLOWLIST = new Set(["admin@suazo.com", "admin@hiago.com"]);
 
-  // --- Lista de servicios con links ya insertados ---
-  const servicios = [
-    {
-      nombre: "Corte clásico (sin degradado)",
-      descripcion:
-        "Corte tradicional con tijeras y máquina, con un acabado limpio y profesional.",
-      precio: 15,
-      duracion: 30,
-      link: "https://calendar.app.google/HMhGdCRaXdMNjCCf9",
-    },
-    {
-      nombre: "Corte y barba",
-      descripcion: "Corte de cabello y arreglo completo de barba.",
-      precio: 25,
-      duracion: 45,
-      link: "https://calendar.app.google/uEZNLkeRfBgPKrDy7",
-    },
-    {
-      nombre: "Corte Fade (degradado)",
-      descripcion:
-        "Corte moderno con degradado suave y líneas precisas.",
-      precio: 17,
-      duracion: 30,
-      link: "https://calendar.app.google/weAYrtqKqzKWxU8j8",
-    },
-    {
-      nombre: "Corte, lavado y peinado (Hombre)",
-      descripcion:
-        "Corte completo con lavado, secado y peinado con producto de acabado.",
-      precio: 20,
-      duracion: 40,
-      link: "https://calendar.app.google/gmi2zWDcZT1YLYNm6",
-    },
-    {
-      nombre: "Barba",
-      descripcion: "Arreglo de barba y acabado definido.",
-      precio: 10,
-      duracion: 20,
-      link: "https://calendar.app.google/N62zCkiLCovv4dEu8",
-    },
-    {
-      nombre: "Niños",
-      descripcion:
-        "Corte especial para niños hasta 12 años, con paciencia y estilo.",
-      precio: 15,
-      duracion: 30,
-      link: "https://calendar.app.google/une16oY5taqxddMg8",
-    },
-    {
-      nombre: "Jubilados",
-      descripcion:
-        "Corte clásico para hombres mayores con descuento especial.",
-      precio: 13,
-      duracion: 30,
-      link: "https://calendar.app.google/MtkahktmAKnvrLvD8",
-    },
-    {
-      nombre: "Mascarilla facial",
-      descripcion:
-        "Tratamiento facial purificante para revitalizar la piel.",
-      precio: 10,
-      duracion: 15,
-      link: "https://calendar.app.google/AcGL8wgtzbgP3hwh8",
-    },
-    {
-      nombre: "Coloración",
-      descripcion:
-        "Tinte completo o parcial para cabello o barba.",
-      precio: 50,
-      duracion: 60,
-      link: "https://calendar.app.google/ffPjbmRC7mwc9gbRA",
-    },
-    {
-      nombre: "Servicio VIP con Suazo",
-      descripcion:
-        "Atención exclusiva y personalizada por Suazo, con asesoramiento, Bebida y Máscara Facial (SIN BARBA).",
-      precio: 30,
-      duracion: 60,
-      link: "https://calendar.app.google/GPTF2UdUpFYcKdUr7",
-    },
-  ];
+export default function Login() {
+  const router = useRouter();
 
-  // Cuando el cliente hace clic en “Reservar cita”:
-  // 1) Registramos la reserva/venta en nuestro backend (/api/bookings)
-  // 2) Abrimos el enlace de Google Calendar como antes
-  const onReservarClick = (servicio) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // intentos fallidos guardados en localStorage
+  const [attempts, setAttempts] = useState(0);
+  const MAX_ATTEMPTS = 3;
+
+  useEffect(() => {
+    // si ya hay sesión, redirige por rol
     try {
-      if (API) {
-        const payload = {
-          name: "Reserva online",
-          email: "online@suazobarber.com",      // email genérico solo para registro
-          service: servicio.nombre,
-          date: new Date().toISOString(),      // momento del clic (no la hora real del Google Calendar)
-          duration: servicio.duracion,
-          price: servicio.precio,              //  aquí va el precio que se usa en la venta
-        };
-
-        // Dispara el POST pero sin bloquear la apertura del calendario
-        axios
-          .post(`${API}/api/bookings`, payload)
-          .catch((err) => {
-            console.error(
-              "Error al registrar reserva/facturación:",
-              err?.response?.data || err.message
-            );
-          });
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
+      if (token && userStr) {
+        const user = JSON.parse(userStr);
+        // refuerzo en frontend: si role=admin pero email no está en allowlist, lo mandamos a /barber
+        if (user?.role === "admin" && ADMIN_ALLOWLIST.has(user?.email)) {
+          router.replace("/admin");
+        } else if (user?.role === "barber") {
+          router.replace("/barber");
+        } else {
+          router.replace("/");
+        }
       }
-    } catch (err) {
-      console.error("Error inesperado al registrar reserva:", err);
+    } catch {
+      // ignora
     }
 
-    // 🔗 Mantiene el comportamiento actual: abrir Google Calendar
-    if (servicio.link) {
-      window.open(servicio.link, "_blank", "noopener,noreferrer");
-    } else {
-      window.location.href = "/agendar";
+    const stored = Number(localStorage.getItem("login_attempts") || 0);
+    setAttempts(stored);
+  }, []);
+
+  useEffect(() => {
+    // si supera el límite, aviso + redirección a Home
+    if (attempts >= MAX_ATTEMPTS) {
+      const t = setTimeout(() => router.replace("/"), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [attempts, router]);
+
+  const scaryNotice = attempts > 0 && attempts < MAX_ATTEMPTS;
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (attempts >= MAX_ATTEMPTS) return;
+
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API}/api/auth/login`, {
+        email,
+        password,
+      });
+
+      const { token, user } = res.data || {};
+      if (!token || !user) throw new Error("Respuesta inválida del servidor");
+
+      // guarda sesión
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // limpia intentos fallidos
+      localStorage.removeItem("login_attempts");
+
+      // redirección con allowlist para admin
+      if (user.role === "admin") {
+        if (ADMIN_ALLOWLIST.has(user.email)) {
+          router.push("/admin");
+        } else {
+          // si alguien intenta hacerse pasar por admin sin estar en la lista,
+          // lo tratamos como barbero por seguridad
+          router.push("/barber");
+        }
+      } else if (user.role === "barber") {
+        router.push("/barber");
+      } else {
+        router.push("/");
+      }
+    } catch (err) {
+      const next = attempts + 1;
+      setAttempts(next);
+      localStorage.setItem("login_attempts", String(next));
+
+      if (next >= MAX_ATTEMPTS) {
+        alert(
+          "⚠️ Acceso bloqueado temporalmente por múltiples intentos fallidos. Serás redirigido a la página principal."
+        );
+      } else {
+        alert(
+          "❌ Credenciales incorrectas. Este intento ha sido registrado. Tu IP y tu agente de navegador pueden ser auditados."
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <main
       style={{
-        padding: "40px 24px",
-        background: "#f7f7f7",
         minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background:
+          "linear-gradient(135deg, rgba(17,17,17,0.9), rgba(34,34,34,0.9)), url('/images/barber-bg.jpg') center/cover no-repeat",
+        padding: "24px",
         fontFamily: "'Poppins', sans-serif",
       }}
     >
-      <h1
+      <form
+        onSubmit={handleLogin}
         style={{
-          textAlign: "center",
-          marginBottom: 32,
-          fontSize: 32,
-          color: "#333",
+          width: "100%",
+          maxWidth: 420,         // 👈 quadrado branco mais largo
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
+          padding: "32px 26px 26px",
+          boxSizing: "border-box", // 👈 inputs não passam para fora
         }}
       >
-        💈 Nuestros Servicios
-      </h1>
+        <h1
+          style={{
+            marginBottom: 6,
+            fontSize: "1.8rem",
+            color: "#111",
+            textAlign: "center",
+          }}
+        >
+          🔐 Iniciar sesión
+        </h1>
+        <p
+          style={{
+            margin: 0,
+            textAlign: "center",
+            color: "#666",
+            fontSize: ".95rem",
+            marginBottom: 20,
+          }}
+        >
+          Acceso exclusivo para personal autorizado.
+        </p>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: 20,
-          justifyContent: "center",
-        }}
-      >
-        {servicios.map((s, i) => (
+        {/* Aviso “asustador” si hay fallos */}
+        {scaryNotice && (
           <div
-            key={i}
             style={{
-              background: "#fff",
-              borderRadius: 12,
-              border: "2px solid #007bff",
-              boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-              padding: 20,
-              textAlign: "center",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              background: "#fff4e5",
+              border: "1px solid #ffd19b",
+              color: "#7a3700",
+              borderRadius: 10,
+              padding: "10px 12px",
+              marginBottom: 14,
+              fontSize: ".9rem",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.boxShadow =
-                "0 4px 12px rgba(0,0,0,0.15)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.boxShadow =
-                "0 3px 10px rgba(0,0,0,0.1)")
-            }
           >
-            <h3 style={{ marginBottom: 8, color: "#222" }}>{s.nombre}</h3>
-            <p style={{ color: "#555", fontSize: 14, marginBottom: 12 }}>
-              {s.descripcion}
-            </p>
-            <p style={{ margin: "6px 0", fontWeight: "bold", fontSize: 16 }}>
-              💶 {s.precio} €
-            </p>
-            <p style={{ color: "#777", fontSize: 14 }}>⏱ {s.duracion} min</p>
-
-            <button
-              onClick={() => onReservarClick(s)}
-              style={{
-                marginTop: 12,
-                background: loading ? "#ccc" : "#007bff",
-                color: "white",
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontWeight: "500",
-                transition: "background 0.2s ease",
-              }}
-              disabled={loading}
-              onMouseEnter={(e) =>
-                (e.target.style.background = loading ? "#ccc" : "#0056b3")
-              }
-              onMouseLeave={(e) =>
-                (e.target.style.background = loading ? "#ccc" : "#007bff")
-              }
-            >
-              {loading ? "Procesando..." : "Reservar cita"}
-            </button>
+            <strong>Advertencia:</strong> intento fallido registrado (
+            {attempts}/{MAX_ATTEMPTS}). Accesos no autorizados serán
+            investigados. La IP y el agente del navegador pueden ser
+            auditados.
           </div>
-        ))}
-      </div>
+        )}
+
+        {attempts >= MAX_ATTEMPTS && (
+          <div
+            style={{
+              background: "#fde8e8",
+              border: "1px solid #f5b5b5",
+              color: "#7a0000",
+              borderRadius: 10,
+              padding: "10px 12px",
+              marginBottom: 14,
+              fontSize: ".9rem",
+            }}
+          >
+            <strong>Bloqueado temporalmente:</strong> demasiados intentos
+            fallidos. Serás redirigido a la página principal.
+          </div>
+        )}
+
+        <label
+          htmlFor="email"
+          style={{ display: "block", fontSize: ".9rem", color: "#333" }}
+        >
+          Correo electrónico
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={attempts >= MAX_ATTEMPTS}
+          placeholder="tu@correo.com"
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            marginTop: 6,
+            marginBottom: 12,
+            outline: "none",
+            boxSizing: "border-box", // 👈 garante que cabe no card
+          }}
+        />
+
+        <label
+          htmlFor="password"
+          style={{ display: "block", fontSize: ".9rem", color: "#333" }}
+        >
+          Contraseña
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={attempts >= MAX_ATTEMPTS}
+          placeholder="••••••••"
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            marginTop: 6,
+            marginBottom: 18,
+            outline: "none",
+            boxSizing: "border-box",
+          }}
+        />
+
+        <button
+          type="submit"
+          disabled={loading || attempts >= MAX_ATTEMPTS}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 10,
+            border: "none",
+            background: loading || attempts >= MAX_ATTEMPTS ? "#bbb" : "#111",
+            color: "#fff",
+            fontWeight: 600,
+            cursor:
+              loading || attempts >= MAX_ATTEMPTS ? "not-allowed" : "pointer",
+            transition: "transform .08s",
+          }}
+          onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
+          onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          {loading ? "Verificando..." : "Entrar"}
+        </button>
+
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: ".8rem",
+            color: "#999",
+            marginTop: 12,
+          }}
+        >
+          Intentos: {attempts}/{MAX_ATTEMPTS}
+        </p>
+      </form>
     </main>
   );
 }
