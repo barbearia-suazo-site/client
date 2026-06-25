@@ -1,282 +1,202 @@
-// client/pages/login.jsx
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import axios from "axios";
+import Head from 'next/head';
+import { useEffect } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-// Solo estos correos pueden ir al /admin
-const ADMIN_ALLOWLIST = new Set(["admin@suazo.com", "admin@hiago.com"]);
-
-export default function Login() {
-  const router = useRouter();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  // intentos fallidos guardados en localStorage
-  const [attempts, setAttempts] = useState(0);
-  const MAX_ATTEMPTS = 3;
-
+export default function Home() {
   useEffect(() => {
-    // si ya hay sesión, redirige por rol
-    try {
-      const token = localStorage.getItem("token");
-      const userStr = localStorage.getItem("user");
-      if (token && userStr) {
-        const user = JSON.parse(userStr);
-        // refuerzo en frontend: si role=admin pero email no está en allowlist, lo mandamos a /barber
-        if (user?.role === "admin" && ADMIN_ALLOWLIST.has(user?.email)) {
-          router.replace("/admin");
-        } else if (user?.role === "barber") {
-          router.replace("/barber");
-        } else {
-          router.replace("/");
-        }
-      }
-    } catch {
-      // ignora
-    }
+    // Carga el script de Instagram al montar la página
+    const script = document.createElement("script");
+    script.src = "https://www.instagram.com/embed.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-    const stored = Number(localStorage.getItem("login_attempts") || 0);
-    setAttempts(stored);
+    return () => {
+      // Limpieza al desmontar el componente
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
   }, []);
 
-  useEffect(() => {
-    // si supera el límite, aviso + redirección a Home
-    if (attempts >= MAX_ATTEMPTS) {
-      const t = setTimeout(() => router.replace("/"), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [attempts, router]);
-
-  const scaryNotice = attempts > 0 && attempts < MAX_ATTEMPTS;
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (attempts >= MAX_ATTEMPTS) return;
-
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API}/api/auth/login`, {
-        email,
-        password,
-      });
-
-      const { token, user } = res.data || {};
-      if (!token || !user) throw new Error("Respuesta inválida del servidor");
-
-      // guarda sesión
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", user.role);
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // limpia intentos fallidos
-      localStorage.removeItem("login_attempts");
-
-      // redirección con allowlist para admin
-      if (user.role === "admin") {
-        if (ADMIN_ALLOWLIST.has(user.email)) {
-          router.push("/admin");
-        } else {
-          // si alguien intenta hacerse pasar por admin sin estar en la lista,
-          // lo tratamos como barbero por seguridad
-          router.push("/barber");
-        }
-      } else if (user.role === "barber") {
-        router.push("/barber");
-      } else {
-        router.push("/");
-      }
-    } catch (err) {
-      const next = attempts + 1;
-      setAttempts(next);
-      localStorage.setItem("login_attempts", String(next));
-
-      if (next >= MAX_ATTEMPTS) {
-        alert(
-          "⚠️ Acceso bloqueado temporalmente por múltiples intentos fallidos. Serás redirigido a la página principal."
-        );
-      } else {
-        alert(
-          "❌ Credenciales incorrectas. Este intento ha sido registrado. Tu IP y tu agente de navegador pueden ser auditados."
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background:
-          "linear-gradient(135deg, rgba(17,17,17,0.9), rgba(34,34,34,0.9)), url('/images/barber-bg.jpg') center/cover no-repeat",
-        padding: "24px",
-        fontFamily: "'Poppins', sans-serif",
-      }}
-    >
-      <form
-        onSubmit={handleLogin}
+    <main style={{ padding: 0, margin: 0 }}>
+      {/* === Hero con imagen de fondo === */}
+      <section
         style={{
-          width: "100%",
-          maxWidth: 420,         // 👈 quadrado branco mais largo
-          background: "#fff",
-          borderRadius: 16,
-          boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
-          padding: "32px 26px 26px",
-          boxSizing: "border-box", // 👈 inputs não passam para fora
+          position: "relative",
+          height: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          textAlign: "center",
+          backgroundImage: "url('/images/barber-bg.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <h1
+        {/* Capa semitransparente */}
+        <div
           style={{
-            marginBottom: 6,
-            fontSize: "1.8rem",
-            color: "#111",
-            textAlign: "center",
-          }}
-        >
-          🔐 Iniciar sesión
-        </h1>
-        <p
-          style={{
-            margin: 0,
-            textAlign: "center",
-            color: "#666",
-            fontSize: ".95rem",
-            marginBottom: 20,
-          }}
-        >
-          Acceso exclusivo para personal autorizado.
-        </p>
-
-        {/* Aviso “asustador” si hay fallos */}
-        {scaryNotice && (
-          <div
-            style={{
-              background: "#fff4e5",
-              border: "1px solid #ffd19b",
-              color: "#7a3700",
-              borderRadius: 10,
-              padding: "10px 12px",
-              marginBottom: 14,
-              fontSize: ".9rem",
-            }}
-          >
-            <strong>Advertencia:</strong> intento fallido registrado (
-            {attempts}/{MAX_ATTEMPTS}). Accesos no autorizados serán
-            investigados. La IP y el agente del navegador pueden ser
-            auditados.
-          </div>
-        )}
-
-        {attempts >= MAX_ATTEMPTS && (
-          <div
-            style={{
-              background: "#fde8e8",
-              border: "1px solid #f5b5b5",
-              color: "#7a0000",
-              borderRadius: 10,
-              padding: "10px 12px",
-              marginBottom: 14,
-              fontSize: ".9rem",
-            }}
-          >
-            <strong>Bloqueado temporalmente:</strong> demasiados intentos
-            fallidos. Serás redirigido a la página principal.
-          </div>
-        )}
-
-        <label
-          htmlFor="email"
-          style={{ display: "block", fontSize: ".9rem", color: "#333" }}
-        >
-          Correo electrónico
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          disabled={attempts >= MAX_ATTEMPTS}
-          placeholder="tu@correo.com"
-          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
             width: "100%",
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            marginTop: 6,
-            marginBottom: 12,
-            outline: "none",
-            boxSizing: "border-box", // 👈 garante que cabe no card
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.55)",
+            zIndex: 1,
           }}
         />
 
-        <label
-          htmlFor="password"
-          style={{ display: "block", fontSize: ".9rem", color: "#333" }}
-        >
-          Contraseña
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          disabled={attempts >= MAX_ATTEMPTS}
-          placeholder="••••••••"
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            marginTop: 6,
-            marginBottom: 18,
-            outline: "none",
-            boxSizing: "border-box",
-          }}
-        />
+        {/* Texto principal */}
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <h1 style={{ fontSize: "3rem", marginBottom: 20 }}>
+            Bienvenido a Suazo Barber
+          </h1>
+          <p
+            style={{
+              fontSize: "1.2rem",
+              marginBottom: 30,
+              maxWidth: 600,
+              lineHeight: 1.5,
+              marginInline: "auto",
+            }}
+          >
+            Estilo, precisión y atención personalizada. En Suazo Barber
+            encontrarás un ambiente moderno y profesional.
+          </p>
+          <a
+            href="/servicos"
+            style={{
+              backgroundColor: "#0066cc",
+              padding: "12px 24px",
+              borderRadius: 6,
+              color: "white",
+              fontWeight: "bold",
+              textDecoration: "none",
+              transition: "background 0.3s",
+              display: "inline-block",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#0055aa";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "#0066cc";
+            }}
+          >
+            💈 Reservar una cita
+          </a>
+        </div>
+      </section>
 
-        <button
-          type="submit"
-          disabled={loading || attempts >= MAX_ATTEMPTS}
+      {/* === Feed de Instagram === */}
+      <section
+        style={{
+          background: "#fff",
+          padding: "60px 24px",
+          textAlign: "center",
+        }}
+      >
+        <h2
           style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: 10,
-            border: "none",
-            background: loading || attempts >= MAX_ATTEMPTS ? "#bbb" : "#111",
-            color: "#fff",
-            fontWeight: 600,
-            cursor:
-              loading || attempts >= MAX_ATTEMPTS ? "not-allowed" : "pointer",
-            transition: "transform .08s",
+            marginBottom: "30px",
+            fontSize: "2rem",
+            color: "#333",
+            textAlign: "center",
           }}
-          onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
-          onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          {loading ? "Verificando..." : "Entrar"}
-        </button>
+           Síguenos en Instagram
+        </h2>
 
         <p
           style={{
+            marginBottom: "20px",
+            color: "#555",
             textAlign: "center",
-            fontSize: ".8rem",
-            color: "#999",
-            marginTop: 12,
           }}
         >
-          Intentos: {attempts}/{MAX_ATTEMPTS}
+          Mira nuestros últimos estilos y cortes en{" "}
+          <a
+            href="https://www.instagram.com/suazo_barber/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              backgroundColor: "#0095f6", // Azul estilo Instagram
+              color: "#fff",
+              padding: "8px 14px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontWeight: "bold",
+              transition: "background 0.3s",
+              display: "inline-block",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#007acc";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#0095f6";
+            }}
+          >
+            @suazo_barber
+          </a>
         </p>
-      </form>
+
+        {/* Publicación de Instagram embebida (perfil Suazo) */}
+        <section
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            textAlign: "center",
+            padding: "20px 0",
+          }}
+        >
+          <blockquote
+            className="instagram-media"
+            data-instgrm-permalink="https://www.instagram.com/suazo_barber/"
+            data-instgrm-version="14"
+            style={{
+              background: "#fff",
+              border: 0,
+              margin: "0 auto",
+              maxWidth: "540px",
+              width: "100%",
+              minWidth: "326px",
+              padding: 0,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          />
+        </section>
+      </section>
+
+      {/* === Sección de ubicación === */}
+      <section
+        style={{
+          textAlign: "center",
+          padding: "60px 24px",
+          background: "#f9f9f9",
+        }}
+      >
+        <h2 style={{ marginBottom: 16 }}>Nuestra ubicación</h2>
+        <p style={{ marginBottom: 16 }}>
+          Ven a visitarnos en nuestro local en Barcelona:
+        </p>
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5986.913964178672!2d2.1401436848266018!3d41.385881122102255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a3f049b1ffb5%3A0xa70c96848064def3!2sSuazo%20Barber!5e0!3m2!1ses!2ses!4v1761577240401!5m2!1ses!2ses"
+            width="800"
+            height="600"
+            style={{ border: 0, borderRadius: 12, maxWidth: 1000, width: "100%" }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Ubicación de Suazo Barber"
+          ></iframe>
+        </div>
+      </section>
     </main>
   );
 }
